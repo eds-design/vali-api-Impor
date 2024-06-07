@@ -6,13 +6,12 @@ class ValiAPIImportSettings
     {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
     }
 
     public function add_admin_menu()
     {
         add_menu_page(
-            'Vali API Settings',
+            __('Vali API Settings', 'vali-api-import'),
             'Vali API',
             'manage_options',
             'vali_api',
@@ -25,7 +24,7 @@ class ValiAPIImportSettings
     {
         ?>
         <div class="wrap">
-            <h1>Vali API Settings</h1>
+            <h1><?php _e('Vali API Settings', 'vali-api-import'); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('vali_api_settings_group');
@@ -42,11 +41,11 @@ class ValiAPIImportSettings
         register_setting('vali_api_settings_group', 'vali_api_token');
         register_setting('vali_api_settings_group', 'vali_api_data_format');
 
-        add_settings_section('vali_api_settings_section', 'API Settings', null, 'vali_api');
+        add_settings_section('vali_api_settings_section', __('API Settings', 'vali-api-import'), null, 'vali_api');
 
         add_settings_field(
             'vali_api_token',
-            'API Token',
+            __('API Token', 'vali-api-import'),
             array($this, 'settings_field_token'),
             'vali_api',
             'vali_api_settings_section'
@@ -54,7 +53,7 @@ class ValiAPIImportSettings
 
         add_settings_field(
             'vali_api_data_format',
-            'Data Format',
+            __('Data Format', 'vali-api-import'),
             array($this, 'settings_field_data_format'),
             'vali_api',
             'vali_api_settings_section'
@@ -62,7 +61,7 @@ class ValiAPIImportSettings
 
         add_settings_field(
             'vali_api_full_endpoint',
-            'Full Data Endpoint',
+            __('Full Data Endpoint', 'vali-api-import'),
             array($this, 'settings_field_full_endpoint'),
             'vali_api',
             'vali_api_settings_section'
@@ -70,7 +69,7 @@ class ValiAPIImportSettings
 
         add_settings_field(
             'vali_api_basic_endpoint',
-            'Basic Data Endpoint',
+            __('Basic Data Endpoint', 'vali-api-import'),
             array($this, 'settings_field_basic_endpoint'),
             'vali_api',
             'vali_api_settings_section'
@@ -88,8 +87,8 @@ class ValiAPIImportSettings
         $format = get_option('vali_api_data_format', 'xml');
         ?>
         <select name="vali_api_data_format">
-            <option value="xml" <?php selected($format, 'xml'); ?>>XML</option>
-            <option value="json" <?php selected($format, 'json'); ?>>JSON</option>
+            <option value="xml" <?php selected($format, 'xml'); ?>><?php _e('XML', 'vali-api-import'); ?></option>
+            <option value="json" <?php selected($format, 'json'); ?>><?php _e('JSON', 'vali-api-import'); ?></option>
         </select>
         <?php
     }
@@ -104,11 +103,6 @@ class ValiAPIImportSettings
     {
         $basicEndpoint = site_url('/vali-api-fetch-basic/?category_ids=');
         echo '<p>' . esc_html($basicEndpoint) . '</p>';
-    }
-
-    public function enqueue_admin_styles()
-    {
-        wp_enqueue_style('vali_api_admin_styles', plugin_dir_url(__FILE__) . 'css/vali-admin-styles.css');
     }
 }
 
