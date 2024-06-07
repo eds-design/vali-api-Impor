@@ -4,11 +4,18 @@ Plugin Name: Vali API Import
 Description: A plugin to import product data from Vali API and integrate with WP All Import PRO.
 Version: 1.0
 Author: Georgi Georgiev
+Text Domain: vali-api-import
+Domain Path: /languages
 */
 
 if (!defined('ABSPATH')) {
     exit;
 }
+
+function vali_api_import_load_textdomain() {
+    load_plugin_textdomain('vali-api-import', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}
+add_action('plugins_loaded', 'vali_api_import_load_textdomain');
 
 require_once plugin_dir_path(__FILE__) . 'includes/settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/api-handler.php';
@@ -35,7 +42,7 @@ class ValiAPIImportFull
 
     public function add_settings_link($links)
     {
-        $settings_link = '<a href="admin.php?page=vali_api">' . __('Settings') . '</a>';
+        $settings_link = '<a href="admin.php?page=vali_api">' . __('Settings', 'vali-api-import') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
     }
@@ -107,7 +114,7 @@ class ValiAPIImportFull
     {
         $categoryIds = isset($_GET['category_ids']) ? array_map('intval', explode(',', $_GET['category_ids'])) : [];
         if (empty($categoryIds)) {
-            wp_send_json_error("Invalid category IDs", 400);
+            wp_send_json_error(__('Invalid category IDs', 'vali-api-import'), 400);
         }
 
         $combinedProducts = [];
@@ -166,3 +173,20 @@ class ValiAPIImportFull
 }
 
 new ValiAPIImportFull();
+
+function vali_api_import_activation_notice() {
+    set_transient('vali_api_import_activation_notice', true, 5);
+}
+register_activation_hook(__FILE__, 'vali_api_import_activation_notice');
+
+function vali_api_import_display_activation_notice() {
+    if (get_transient('vali_api_import_activation_notice')) {
+        ?>
+        <div class="notice notice-warning is-dismissible">
+            <p><?php _e('Please regenerate your permalinks. ', 'vali-api-import'); ?><a href="<?php echo esc_url(admin_url('options-permalink.php')); ?>"><?php _e('Permalink Settings', 'vali-api-import'); ?></a></p>
+        </div>
+        <?php
+        delete_transient('vali_api_import_activation_notice');
+    }
+}
+add_action('admin_notices', 'vali_api_import_display_activation_notice');
