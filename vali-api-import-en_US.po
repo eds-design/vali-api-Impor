@@ -1,0 +1,80 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Vali API Import\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-06-07 15:05+0000\n"
+"PO-Revision-Date: 2024-06-07 15:09+0000\n"
+"Last-Translator: \n"
+"Language-Team: English (United States)\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.9; wp-6.5.4\n"
+"X-Domain: vali-api-import"
+
+#. Description of the plugin
+msgid ""
+"A plugin to import product data from Vali API and integrate with WP All "
+"Import PRO."
+msgstr ""
+"A plugin to import product data from Vali API and integrate with WP All "
+"Import PRO."
+
+#: includes/settings.php:44
+msgid "API Settings"
+msgstr "API Settings"
+
+#: includes/settings.php:48
+msgid "API Token"
+msgstr "API Token"
+
+#: includes/settings.php:72
+msgid "Basic Data Endpoint"
+msgstr "Basic Data Endpoint"
+
+#: includes/settings.php:56
+msgid "Data Format"
+msgstr "Data Format"
+
+#: includes/settings.php:64
+msgid "Full Data Endpoint"
+msgstr "Full Data Endpoint"
+
+#. Author of the plugin
+msgid "Georgi Georgiev"
+msgstr "Georgi Georgiev"
+
+#: vali-api-import.php:117
+msgid "Invalid category IDs"
+msgstr "Invalid category IDs"
+
+#: includes/settings.php:91
+msgid "JSON"
+msgstr "JSON"
+
+#: vali-api-import.php:186
+msgid "Permalink Settings"
+msgstr "Permalink Settings"
+
+#: vali-api-import.php:186
+msgid "Please regenerate your permalinks. "
+msgstr "Please regenerate your permalinks. "
+
+#: vali-api-import.php:45
+msgid "Settings"
+msgstr "Settings"
+
+#. Name of the plugin
+msgid "Vali API Import"
+msgstr "Vali API Import"
+
+#: includes/settings.php:14 includes/settings.php:27
+msgid "Vali API Settings"
+msgstr "Vali API Settings"
+
+#: includes/settings.php:90
+msgid "XML"
+msgstr "XML"
