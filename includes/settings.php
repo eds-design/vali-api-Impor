@@ -78,7 +78,7 @@ class ValiAPIImportSettings
          add_settings_field(
             'vali_api_all_endpoint',
             __('All Data Endpoint', 'vali-api-import'),
-            array($this, 'settings_field_basic_endpoint'),
+            array($this, 'settings_field_all_endpoint'),
             'vali_api',
             'vali_api_settings_section'
         );
@@ -110,6 +110,12 @@ class ValiAPIImportSettings
     public function settings_field_basic_endpoint()
     {
         $basicEndpoint = site_url('/vali-api-fetch-basic/?category_ids=');
+        echo '<p>' . esc_html($basicEndpoint) . '</p>';
+    }
+
+    public function settings_field_all_endpoint()
+    {
+        $basicEndpoint = site_url('/vvali-api-fetch-all');
         echo '<p>' . esc_html($basicEndpoint) . '</p>';
     }
 }
