@@ -51,12 +51,14 @@ class ValiAPIImportFull
     {
         add_rewrite_rule('^vali-api-fetch-full/?', 'index.php?vali_api_fetch_full=1', 'top');
         add_rewrite_rule('^vali-api-fetch-basic/?', 'index.php?vali_api_fetch_basic=1', 'top');
+        add_rewrite_rule('^vali-api-fetch-all/?', 'index.php?vali_api_fetch_all=1', 'top');
     }
 
     public function add_query_vars($vars)
     {
         $vars[] = 'vali_api_fetch_full';
         $vars[] = 'vali_api_fetch_basic';
+        $vars[] = 'vali_api_fetch_all';
         return $vars;
     }
 
@@ -69,6 +71,11 @@ class ValiAPIImportFull
 
         if (get_query_var('vali_api_fetch_basic')) {
             $this->fetch_and_output_data(false);
+            exit;
+        }
+
+        if (get_query_var('vali_api_fetch_all')) {
+            $this->fetch_and_output_all_data();
             exit;
         }
     }
@@ -162,6 +169,42 @@ class ValiAPIImportFull
         echo $combinedData;
     }
 
+    public function fetch_and_output_all_data()
+    {
+    $data = $this->api->getAllProducts();
+
+    if ($this->api->errorCode != 200) {
+        error_log("Vali API request error {$this->api->errorCode}: $data");
+        wp_send_json_error(__('Error fetching all products', 'vali-api-import'), 500);
+    }
+
+    $dataFormat = get_option('vali_api_data_format', 'xml');
+
+    if ($dataFormat === 'xml') {
+        $data = $this->remove_items_with_language_code($data, 'en');
+        $xml = new SimpleXMLElement($data);
+        foreach ($xml->product as $product) {
+            $categoryId = (int)$product->categories->category->id;
+            $categoryName = isset($this->categories[$categoryId]) ? $this->categories[$categoryId] : $categoryId;
+            $product->addChild('category', $categoryName);
+        }
+        $combinedData = $xml->asXML();
+        header('Content-Type: application/xml');
+    } else {
+        $products = json_decode($data);
+        foreach ($products as $product) {
+            if (isset($product->categories[0])) { // Проверка дали съществува първият елемент в масива
+                $categoryId = $product->categories[0]->id; // Assuming each product has at least one category
+                $product->category = isset($this->categories[$categoryId]) ? $this->categories[$categoryId] : $categoryId;
+            }
+        }
+        $combinedData = json_encode($products);
+        header('Content-Type: application/json');
+    }
+
+    echo $combinedData;
+    }
+
     private function remove_items_with_language_code($xmlData, $languageCode)
     {
         $xml = new SimpleXMLElement($xmlData);
@@ -183,7 +226,7 @@ function vali_api_import_display_activation_notice() {
     if (get_transient('vali_api_import_activation_notice')) {
         ?>
         <div class="notice notice-warning is-dismissible">
-            <p><?php _e('Please regenerate your permalinks. ', 'vali-api-import'); ?><a href="<?php echo esc_url(admin_url('options-permalink.php')); ?>"><?php _e('Permalink Settings', 'vali-api-import'); ?></a></p>
+            <p><?php _e('Important: Please regenerate Your permalinks before use url ', 'vali-api-import'); ?><a href="<?php echo esc_url(admin_url('options-permalink.php')); ?>"><?php _e('Permalink Settings', 'vali-api-import'); ?></a></p>
         </div>
         <?php
         delete_transient('vali_api_import_activation_notice');
