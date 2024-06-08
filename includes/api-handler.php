@@ -58,4 +58,9 @@ class ValiAPIImport
     {
         return $this->getRequest("/products/by_manufacturer/$manufacturerId" . ($full ? "/full" : ""));
     }
+
+    public function getAllProducts()
+    {
+        return $this->getRequest("/products");
+    }
 }
