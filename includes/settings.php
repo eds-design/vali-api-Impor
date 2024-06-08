@@ -115,7 +115,7 @@ class ValiAPIImportSettings
 
     public function settings_field_all_endpoint()
     {
-        $basicEndpoint = site_url('/vvali-api-fetch-all');
+        $basicEndpoint = site_url('/vali-api-fetch-all');
         echo '<p>' . esc_html($basicEndpoint) . '</p>';
     }
 }
