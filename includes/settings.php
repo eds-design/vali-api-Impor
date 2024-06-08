@@ -16,7 +16,7 @@ class ValiAPIImportSettings
             'manage_options',
             'vali_api',
             array($this, 'settings_page'),
-            'dashicons-admin-generic'
+            'dashicons-database-import'
         );
     }
 
