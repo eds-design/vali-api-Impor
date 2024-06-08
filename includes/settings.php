@@ -74,6 +74,14 @@ class ValiAPIImportSettings
             'vali_api',
             'vali_api_settings_section'
         );
+
+         add_settings_field(
+            'vali_api_all_endpoint',
+            __('All Data Endpoint', 'vali-api-import'),
+            array($this, 'settings_field_basic_endpoint'),
+            'vali_api',
+            'vali_api_settings_section'
+        );
     }
 
     public function settings_field_token()
