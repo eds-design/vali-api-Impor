@@ -1,103 +1,64 @@
 <?php
 
-class ValiAPIImportSettings
+class ValiAPIImport
 {
-    public function __construct()
+    public $errorCode;
+    public $apiRoot = "https://www.vali.bg/api/v1";
+    public $apiToken = "";
+
+    public function __construct($apiToken)
     {
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        add_action('admin_init', array($this, 'register_settings'));
+        $this->apiToken = $apiToken;
     }
 
-    public function add_admin_menu()
+    private function getRequest($uri)
     {
-        add_menu_page(
-            __('Vali API Settings', 'vali-api-import'),
-            'Vali API',
-            'manage_options',
-            'vali_api',
-            array($this, 'settings_page'),
-            'dashicons-database-import'
-        );
+        $socket = curl_init();
+        curl_setopt($socket, CURLOPT_URL, $this->apiRoot . $uri);
+        curl_setopt($socket, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($socket, CURLOPT_HTTPHEADER, [
+            'Accept: application/json',
+            'Authorization: Bearer ' . $this->apiToken,
+        ]);
+        $result = curl_exec($socket);
+        $this->errorCode = curl_getinfo($socket, CURLINFO_HTTP_CODE);
+        curl_close($socket);
+
+        return $result;
     }
 
-    public function settings_page()
+    public function getCategories()
     {
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Vali API Settings', 'vali-api-import'); ?></h1>
-            <form method="post" action="options.php">
-                <?php
-                settings_fields('vali_api_settings_group');
-                do_settings_sections('vali_api');
-                submit_button();
-                ?>
-            </form>
-        </div>
-        <?php
+        return $this->getRequest("/categories");
     }
 
-    public function register_settings()
+    public function getManufacturers()
     {
-        register_setting('vali_api_settings_group', 'vali_api_token');
-
-        add_settings_section('vali_api_settings_section', __('API Settings', 'vali-api-import'), null, 'vali_api');
-
-        add_settings_field(
-            'vali_api_token',
-            __('API Token', 'vali-api-import'),
-            array($this, 'settings_field_token'),
-            'vali_api',
-            'vali_api_settings_section'
-        );
-
-        add_settings_field(
-            'vali_api_full_endpoint',
-            __('Full Data Endpoint', 'vali-api-import'),
-            array($this, 'settings_field_full_endpoint'),
-            'vali_api',
-            'vali_api_settings_section'
-        );
-
-        add_settings_field(
-            'vali_api_basic_endpoint',
-            __('Basic Data Endpoint', 'vali-api-import'),
-            array($this, 'settings_field_basic_endpoint'),
-            'vali_api',
-            'vali_api_settings_section'
-        );
-
-        add_settings_field(
-            'vali_api_all_endpoint',
-            __('All Data Endpoint', 'vali-api-import'),
-            array($this, 'settings_field_all_endpoint'),
-            'vali_api',
-            'vali_api_settings_section'
-        );
+        return $this->getRequest("/manufacturers");
     }
 
-    public function settings_field_token()
+    public function getParameters($categoryId)
     {
-        $value = get_option('vali_api_token', '');
-        echo '<input type="password" name="vali_api_token" value="' . esc_attr($value) . '" style="width:30%;" />';
+        return $this->getRequest("/parameters/$categoryId");
     }
 
-    public function settings_field_full_endpoint()
+    public function getProduct($productId, $full = false)
     {
-        $fullEndpoint = site_url('/vali-api-fetch-full/?category_ids=');
-        echo '<p>' . esc_html($fullEndpoint) . '</p>';
+        return $this->getRequest("/product/$productId" . ($full ? "/full" : ""));
     }
 
-    public function settings_field_basic_endpoint()
+    public function getProductsByCategory($categoryId, $full = false)
     {
-        $basicEndpoint = site_url('/vali-api-fetch-basic/?category_ids=');
-        echo '<p>' . esc_html($basicEndpoint) . '</p>';
+        return $this->getRequest("/products/by_category/$categoryId" . ($full ? "/full" : ""));
     }
 
-    public function settings_field_all_endpoint()
+    public function getProductsByManufacturer($manufacturerId, $full = false)
     {
-        $basicEndpoint = site_url('/vali-api-fetch-all');
-        echo '<p>' . esc_html($basicEndpoint) . '</p>';
+        return $this->getRequest("/products/by_manufacturer/$manufacturerId" . ($full ? "/full" : ""));
+    }
+
+    public function getAllProducts()
+    {
+        return $this->getRequest("/products");
     }
 }
-
-new ValiAPIImportSettings();
