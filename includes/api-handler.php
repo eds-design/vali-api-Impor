@@ -5,12 +5,10 @@ class ValiAPIImport
     public $errorCode;
     public $apiRoot = "https://www.vali.bg/api/v1";
     public $apiToken = "";
-    public $useXML = false;
 
-    public function __construct($apiToken, $useXML = false)
+    public function __construct($apiToken)
     {
         $this->apiToken = $apiToken;
-        $this->useXML = $useXML;
     }
 
     private function getRequest($uri)
@@ -19,7 +17,7 @@ class ValiAPIImport
         curl_setopt($socket, CURLOPT_URL, $this->apiRoot . $uri);
         curl_setopt($socket, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($socket, CURLOPT_HTTPHEADER, [
-            'Accept: application/' . ($this->useXML ? 'xml' : 'json'),
+            'Accept: application/json',
             'Authorization: Bearer ' . $this->apiToken,
         ]);
         $result = curl_exec($socket);
