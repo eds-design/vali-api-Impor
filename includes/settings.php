@@ -39,7 +39,6 @@ class ValiAPIImportSettings
     public function register_settings()
     {
         register_setting('vali_api_settings_group', 'vali_api_token');
-        register_setting('vali_api_settings_group', 'vali_api_data_format');
 
         add_settings_section('vali_api_settings_section', __('API Settings', 'vali-api-import'), null, 'vali_api');
 
@@ -47,14 +46,6 @@ class ValiAPIImportSettings
             'vali_api_token',
             __('API Token', 'vali-api-import'),
             array($this, 'settings_field_token'),
-            'vali_api',
-            'vali_api_settings_section'
-        );
-
-        add_settings_field(
-            'vali_api_data_format',
-            __('Data Format', 'vali-api-import'),
-            array($this, 'settings_field_data_format'),
             'vali_api',
             'vali_api_settings_section'
         );
@@ -75,7 +66,7 @@ class ValiAPIImportSettings
             'vali_api_settings_section'
         );
 
-         add_settings_field(
+        add_settings_field(
             'vali_api_all_endpoint',
             __('All Data Endpoint', 'vali-api-import'),
             array($this, 'settings_field_all_endpoint'),
@@ -88,17 +79,6 @@ class ValiAPIImportSettings
     {
         $value = get_option('vali_api_token', '');
         echo '<input type="password" name="vali_api_token" value="' . esc_attr($value) . '" style="width:30%;" />';
-    }
-
-    public function settings_field_data_format()
-    {
-        $format = get_option('vali_api_data_format', 'xml');
-        ?>
-        <select name="vali_api_data_format">
-            <option value="xml" <?php selected($format, 'xml'); ?>><?php _e('XML', 'vali-api-import'); ?></option>
-            <option value="json" <?php selected($format, 'json'); ?>><?php _e('JSON', 'vali-api-import'); ?></option>
-        </select>
-        <?php
     }
 
     public function settings_field_full_endpoint()
