@@ -28,8 +28,7 @@ class ValiAPIImportFull
     public function __construct()
     {
         $apiToken = get_option('vali_api_token', '');
-        $useXML = get_option('vali_api_data_format', 'xml') === 'xml';
-        $this->api = new ValiAPIImport($apiToken, $useXML);
+        $this->api = new ValiAPIImport($apiToken);
 
         add_action('init', array($this, 'register_api_endpoints'));
         add_action('query_vars', array($this, 'add_query_vars'));
@@ -89,29 +88,13 @@ class ValiAPIImportFull
             return;
         }
 
-        $dataFormat = get_option('vali_api_data_format', 'xml');
-
-        if ($dataFormat === 'xml') {
-            $xml = new SimpleXMLElement($response);
-
-            foreach ($xml->category as $category) {
-                $id = (int)$category->id;
-                foreach ($category->name->item as $name) {
-                    if ($name->language_code == 'bg') {
-                        $this->categories[$id] = (string)$name->text;
-                        break;
-                    }
-                }
-            }
-        } else {
-            $categories = json_decode($response);
-            foreach ($categories as $category) {
-                $id = $category->id;
-                foreach ($category->name as $name) {
-                    if (isset($name->language_code) && $name->language_code == 'bg') {
-                        $this->categories[$id] = $name->text;
-                        break;
-                    }
+        $categories = json_decode($response);
+        foreach ($categories as $category) {
+            $id = $category->id;
+            foreach ($category->name as $name) {
+                if (isset($name->language_code) && $name->language_code == 'bg') {
+                    $this->categories[$id] = $name->text;
+                    break;
                 }
             }
         }
@@ -125,7 +108,6 @@ class ValiAPIImportFull
         }
 
         $combinedProducts = [];
-        $dataFormat = get_option('vali_api_data_format', 'xml');
 
         foreach ($categoryIds as $categoryId) {
             if (!$categoryId) {
@@ -139,79 +121,36 @@ class ValiAPIImportFull
                 continue;
             }
 
-            if ($dataFormat === 'xml') {
-                $data = $this->remove_items_with_language_code($data, 'en');
-                $categoryName = isset($this->categories[$categoryId]) ? $this->categories[$categoryId] : $categoryId;
-                $data = str_replace("<category>{$categoryId}</category>", "<category>{$categoryName}</category>", $data);
-                $xml = new SimpleXMLElement($data);
-                foreach ($xml->product as $product) {
-                    $combinedProducts[] = $product->asXML();
-                }
-            } else {
-                $products = json_decode($data);
-                foreach ($products as $product) {
-                    $product->category = isset($this->categories[$categoryId]) ? $this->categories[$categoryId] : $categoryId;
-                    $combinedProducts[] = json_encode($product);
-                }
+            $products = json_decode($data);
+            foreach ($products as $product) {
+                $product->category = isset($this->categories[$product->categories[0]->id]) ? $this->categories[$product->categories[0]->id] : $product->categories[0]->id;
+                $combinedProducts[] = $product;
             }
         }
 
-        if ($dataFormat === 'xml') {
-            $combinedData = '<?xml version="1.0" encoding="UTF-8"?><products>';
-            $combinedData .= implode('', $combinedProducts);
-            $combinedData .= '</products>';
-            header('Content-Type: application/xml');
-        } else {
-            $combinedData = '[' . implode(',', $combinedProducts) . ']';
-            header('Content-Type: application/json');
-        }
-
-        echo $combinedData;
+        header('Content-Type: application/json');
+        echo json_encode($combinedProducts);
     }
 
     public function fetch_and_output_all_data()
     {
-    $data = $this->api->getAllProducts();
+        $data = $this->api->getAllProducts();
 
-    if ($this->api->errorCode != 200) {
-        error_log("Vali API request error {$this->api->errorCode}: $data");
-        wp_send_json_error(__('Error fetching all products', 'vali-api-import'), 500);
-    }
-
-    $dataFormat = get_option('vali_api_data_format', 'xml');
-
-    if ($dataFormat === 'xml') {
-        $data = $this->remove_items_with_language_code($data, 'en');
-        $xml = new SimpleXMLElement($data);
-        foreach ($xml->product as $product) {
-            $categoryId = (int)$product->categories->category->id;
-            $categoryName = isset($this->categories[$categoryId]) ? $this->categories[$categoryId] : $categoryId;
-            $product->addChild('category', $categoryName);
+        if ($this->api->errorCode != 200) {
+            error_log("Vali API request error {$this->api->errorCode}: $data");
+            wp_send_json_error(__('Error fetching all products', 'vali-api-import'), 500);
         }
-        $combinedData = $xml->asXML();
-        header('Content-Type: application/xml');
-    } else {
+
         $products = json_decode($data);
         foreach ($products as $product) {
-            if (isset($product->categories[0])) { // Проверка дали съществува първият елемент в масива
-                $categoryId = $product->categories[0]->id; // Assuming each product has at least one category
+            if (isset($product->categories[0])) {
+                $categoryId = $product->categories[0]->id;
                 $product->category = isset($this->categories[$categoryId]) ? $this->categories[$categoryId] : $categoryId;
             }
         }
-        $combinedData = json_encode($products);
+
         header('Content-Type: application/json');
-    }
-
-    echo $combinedData;
-    }
-
-    private function remove_items_with_language_code($xmlData, $languageCode)
-    {
-        $xml = new SimpleXMLElement($xmlData);
-        foreach ($xml->xpath("//item[language_code='{$languageCode}']") as $item) {
-            unset($item[0]);
-        }
-        return $xml->asXML();
+        echo json_encode($products);
     }
 }
 
